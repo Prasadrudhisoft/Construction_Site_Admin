@@ -10,7 +10,16 @@ CREATE TABLE register (
     status ENUM('active', 'disabled') DEFAULT 'active'
 );
 
-
+Create table organization_master (
+    org_id INT AUTO_INCREMENT PRIMARY KEY,
+    admin_id INT NOT NULL,
+    role ENUM('super_admin', 'admin', 'project_manager', 'architect', 'accountant', 'site_engineer') NOT NULL,
+    company_name VARCHAR(255) NOT NULL,
+    company_address VARCHAR(255) NOT NULL,
+    company_phone VARCHAR(20) NOT NULL,
+    company_email VARCHAR(100) NOT NULL,
+    FOREIGN KEY (admin_id) REFERENCES register(id) ON DELETE CASCADE
+);
 
 -- ##########################projects table###################################
 
@@ -33,6 +42,8 @@ CREATE TABLE sites (
     location VARCHAR(255) NOT NULL,
     site_engineer_id INT NOT NULL,
     architect_id INT,
+    org_id INT NOT NULL,
+    FOREIGN KEY (org_id) REFERENCES organization_master(org_id) ON DELETE CASCADE,
     FOREIGN KEY (site_engineer_id) REFERENCES site_engineers(id) ON DELETE CASCADE,
     FOREIGN KEY (architect_id) REFERENCES architects(id) ON DELETE SET NULL
 );

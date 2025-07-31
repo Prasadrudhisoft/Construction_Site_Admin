@@ -1,0 +1,1191 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Super Admin Dashboard</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --success-color: #27ae60;
+            --warning-color: #f39c12;
+            --danger-color: #e74c3c;
+            --light-bg: #f8f9fa;
+            --dark-text: #2c3e50;
+            --border-color: #e0e0e0;
+            --sidebar-width: 260px;
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--light-bg);
+            color: var(--dark-text);
+            line-height: 1.6;
+        }
+
+        .dashboard-container {
+            display: flex;
+            min-height: 100vh;
+            position: relative;
+        }
+
+        /* Sidebar Styles */
+        .sidebar {
+            width: var(--sidebar-width);
+            background: linear-gradient(135deg, var(--primary-color), #34495e);
+            color: white;
+            padding: 0;
+            position: fixed;
+            height: 100vh;
+            left: 0;
+            top: 0;
+            z-index: 1000;
+            transition: var(--transition);
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+            overflow-y: auto;
+        }
+
+        .sidebar.collapsed {
+            width: 60px;
+        }
+
+        .sidebar-header {
+            padding: 20px;
+            text-align: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(0, 0, 0, 0.1);
+        }
+
+        .sidebar-header h2 {
+            font-size: 1.4rem;
+            font-weight: 600;
+            margin-bottom: 5px;
+            transition: var(--transition);
+        }
+
+        .sidebar.collapsed .sidebar-header h2,
+        .sidebar.collapsed .sidebar-header p {
+            display: none;
+        }
+
+        .sidebar-header p {
+            font-size: 0.9rem;
+            opacity: 0.8;
+            margin: 0;
+        }
+
+        .sidebar-toggle {
+            position: absolute;
+            top: 20px;
+            right: -15px;
+            background: white;
+            color: var(--primary-color);
+            border: none;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1001;
+            transition: var(--transition);
+        }
+
+        .sidebar-toggle:hover {
+            background: var(--secondary-color);
+            color: white;
+        }
+
+        .sidebar-nav {
+            padding: 20px 0;
+        }
+
+        .sidebar-nav a {
+            display: flex;
+            align-items: center;
+            color: white;
+            text-decoration: none;
+            padding: 15px 20px;
+            margin: 2px 0;
+            transition: var(--transition);
+            border-left: 3px solid transparent;
+        }
+
+        .sidebar-nav a:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-left-color: var(--secondary-color);
+        }
+
+        .sidebar-nav a.active {
+            background: rgba(52, 152, 219, 0.2);
+            border-left-color: var(--secondary-color);
+        }
+
+        .sidebar-nav a i {
+            width: 20px;
+            margin-right: 15px;
+            text-align: center;
+            transition: var(--transition);
+        }
+
+        .sidebar.collapsed .sidebar-nav a span {
+            display: none;
+        }
+
+        .sidebar.collapsed .sidebar-nav a {
+            justify-content: center;
+            padding: 15px 20px;
+        }
+
+        .sidebar.collapsed .sidebar-nav a i {
+            margin-right: 0;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            margin-left: var(--sidebar-width);
+            transition: var(--transition);
+            min-height: 100vh;
+        }
+
+        .main-content.expanded {
+            margin-left: 60px;
+        }
+
+        .content-header {
+            background: white;
+            padding: 20px 30px;
+            border-bottom: 1px solid var(--border-color);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 999;
+        }
+
+        .content-header h1 {
+            color: var(--dark-text);
+            font-size: 1.8rem;
+            font-weight: 600;
+            margin: 0;
+            display: flex;
+            align-items: center;
+        }
+
+        .content-header h1 i {
+            margin-right: 10px;
+            color: var(--secondary-color);
+        }
+
+        .content-body {
+            padding: 30px;
+        }
+
+        /* Section Styles */
+        .section {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+            overflow: hidden;
+            display: none;
+        }
+
+        .section.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .section-header {
+            background: var(--primary-color);
+            color: white;
+            padding: 20px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .section-header h2 {
+            font-size: 1.4rem;
+            font-weight: 600;
+            margin: 0;
+            display: flex;
+            align-items: center;
+        }
+
+        .section-header h2 i {
+            margin-right: 10px;
+        }
+
+        .section-content {
+            padding: 0;
+        }
+
+        /* Table Styles */
+        .table-container {
+            overflow-x: auto;
+            position: relative;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 0;
+            background: white;
+            font-size: 0.9rem;
+        }
+
+        th,
+        td {
+            padding: 15px 20px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        th {
+            background: var(--light-bg);
+            font-weight: 600;
+            color: var(--dark-text);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        tr:hover {
+            background: #f8f9fa;
+        }
+
+        /* Action Buttons */
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 8px 12px;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            text-decoration: none;
+            cursor: pointer;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            white-space: nowrap;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-edit {
+            background: var(--secondary-color);
+            color: white;
+        }
+
+        .btn-edit:hover {
+            background: #2980b9;
+        }
+
+        .btn-delete {
+            background: var(--danger-color);
+            color: white;
+        }
+
+        .btn-delete:hover {
+            background: #c0392b;
+        }
+
+        .btn-disable {
+            background: var(--warning-color);
+            color: white;
+        }
+
+        .btn-disable:hover {
+            background: #e67e22;
+        }
+
+        .btn-enable {
+            background: var(--success-color);
+            color: white;
+        }
+
+        .btn-enable:hover {
+            background: #229954;
+        }
+
+        /* Status Badges */
+        .status-badge {
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .status-active {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-inactive {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .status-pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #666;
+        }
+
+        .empty-state i {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            color: #ddd;
+        }
+
+        .empty-state h3 {
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+            color: #666;
+        }
+
+        .empty-state p {
+            color: #999;
+            font-size: 0.9rem;
+        }
+
+        /* Mobile Overlay */
+        .mobile-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+        }
+
+        .mobile-overlay.active {
+            display: block;
+        }
+
+        /* Mobile Menu Button */
+        .mobile-menu-btn {
+            display: none;
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            cursor: pointer;
+            z-index: 1001;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Chart Card Styles */
+        .chart-card {
+            flex: 1;
+            min-width: 300px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .chart-card h3 {
+            margin-top: 0;
+            color: var(--primary-color);
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 250px;
+            width: 100%;
+        }
+
+        /* Stats Card Styles */
+        .stats-card {
+            flex: 1;
+            min-width: 250px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            transition: var(--transition);
+        }
+
+        .stats-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+        }
+
+        .stats-card .icon {
+            font-size: 2rem;
+            margin-right: 15px;
+        }
+
+        .stats-card .stats-content h4 {
+            margin: 0;
+            font-size: 1rem;
+            color: #666;
+        }
+
+        .stats-card .stats-content h2 {
+            margin: 5px 0 0;
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1024px) {
+            .content-body {
+                padding: 20px;
+            }
+
+            .content-header {
+                padding: 20px;
+            }
+
+            .section-header {
+                padding: 20px;
+            }
+
+            th,
+            td {
+                padding: 12px 15px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 280px;
+                transform: translateX(-100%);
+            }
+
+            .sidebar.mobile-open {
+                transform: translateX(0);
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+
+            .main-content.expanded {
+                margin-left: 0;
+            }
+
+            .mobile-menu-btn {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            .sidebar-toggle {
+                display: none;
+            }
+
+            .content-header {
+                padding: 15px 20px;
+                padding-left: 80px;
+            }
+
+            .content-header h1 {
+                font-size: 1.5rem;
+            }
+
+            .content-body {
+                padding: 15px;
+            }
+
+            .section-header {
+                padding: 15px 20px;
+            }
+
+            .section-header h2 {
+                font-size: 1.2rem;
+            }
+
+            .table-container {
+                border-radius: 8px;
+                border: 1px solid var(--border-color);
+            }
+
+            th,
+            td {
+                padding: 10px 8px;
+                font-size: 0.8rem;
+            }
+
+            .action-buttons {
+                gap: 4px;
+            }
+
+            .btn {
+                padding: 6px 8px;
+                font-size: 0.7rem;
+            }
+
+            .stats-card {
+                min-width: 100%;
+            }
+
+            .chart-card {
+                min-width: 100%;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .content-header h1 {
+                font-size: 1.3rem;
+            }
+
+            .section-header h2 {
+                font-size: 1.1rem;
+            }
+
+            th,
+            td {
+                padding: 8px 6px;
+                font-size: 0.75rem;
+            }
+
+            .btn {
+                padding: 5px 6px;
+                font-size: 0.65rem;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+                gap: 3px;
+            }
+        }
+
+        /* Print Styles */
+        @media print {
+            .sidebar,
+            .mobile-menu-btn,
+            .sidebar-toggle {
+                display: none !important;
+            }
+
+            .main-content {
+                margin-left: 0 !important;
+            }
+
+            .section {
+                display: block !important;
+                break-inside: avoid;
+            }
+
+            .content-header {
+                position: static;
+                box-shadow: none;
+                border-bottom: 2px solid #000;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="dashboard-container">
+        <!-- Mobile Menu Button -->
+        <button class="mobile-menu-btn" onclick="toggleMobileSidebar()">
+            <i class="fas fa-bars"></i>
+        </button>
+
+        <!-- Mobile Overlay -->
+        <div class="mobile-overlay" onclick="closeMobileSidebar()"></div>
+
+        <!-- Sidebar -->
+        <div class="sidebar" id="sidebar">
+            <button class="sidebar-toggle" onclick="toggleSidebar()">
+                <i class="fas fa-angle-left"></i>
+            </button>
+
+            <div class="sidebar-header">
+                <h2><i class="fas fa-user-shield"></i> Super Admin</h2>
+                <p>Control Panel</p>
+            </div>
+
+            <nav class="sidebar-nav">
+                <a href="#" onclick="showSection('dashboard-section')" class="nav-link">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="#" onclick="showSection('users-section')" class="nav-link active">
+                    <i class="fas fa-users"></i>
+                    <span>Users</span>
+                </a>
+                <a href="#" onclick="showSection('sites-section')" class="nav-link">
+                    <i class="fas fa-building"></i>
+                    <span>Sites</span>
+                </a>
+                <a href="#" onclick="showSection('architects-section')" class="nav-link">
+                    <i class="fas fa-drafting-compass"></i>
+                    <span>Architects</span>
+                </a>
+                <a href="/super_admin/create_user" class="nav-link">
+                    <i class="fas fa-user-plus"></i>
+                    <span>Create User</span>
+                </a>
+                <a href="/logout" class="nav-link">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Logout</span>
+                </a>
+            </nav>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content" id="mainContent">
+            <div class="content-header">
+                <h1 id="pageTitle">
+                    <i class="fas fa-users"></i>
+                    Users Management
+                </h1>
+            </div>
+            <div class="content-body">
+                <!-- Dashboard Section -->
+                <div id="dashboard-section" class="section">
+                    <div class="section-header">
+                        <h2><i class="fas fa-tachometer-alt"></i> Dashboard Overview</h2>
+                    </div>
+                    <div class="section-content">
+                        <div class="content-body">
+                            <div style="display: flex; gap: 20px; flex-wrap: wrap; margin-bottom: 30px;">
+                                <!-- Stats Cards will be populated by JavaScript -->
+                                <div class="stats-card" style="border-left: 4px solid #3498db;">
+                                    <div style="display: flex; align-items: center;">
+                                        <div class="icon" style="color: #3498db;">
+                                            <i class="fas fa-user-shield"></i>
+                                        </div>
+                                        <div class="stats-content">
+                                            <h4>Total Admins</h4>
+                                            <h2 id="admin-count">0</h2>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="stats-card" style="border-left: 4px solid #9b59b6;">
+                                    <div style="display: flex; align-items: center;">
+                                        <div class="icon" style="color: #9b59b6;">
+                                            <i class="fas fa-drafting-compass"></i>
+                                        </div>
+                                        <div class="stats-content">
+                                            <h4>Total Architects</h4>
+                                            <h2 id="architect-count">0</h2>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="stats-card" style="border-left: 4px solid #e74c3c;">
+                                    <div style="display: flex; align-items: center;">
+                                        <div class="icon" style="color: #e74c3c;">
+                                            <i class="fas fa-hard-hat"></i>
+                                        </div>
+                                        <div class="stats-content">
+                                            <h4>Total Engineers</h4>
+                                            <h2 id="engineer-count">0</h2>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="stats-card" style="border-left: 4px solid #27ae60;">
+                                    <div style="display: flex; align-items: center;">
+                                        <div class="icon" style="color: #27ae60;">
+                                            <i class="fas fa-calculator"></i>
+                                        </div>
+                                        <div class="stats-content">
+                                            <h4>Total Accountants</h4>
+                                            <h2 id="accountant-count">0</h2>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Charts Row -->
+                            <div style="display: flex; gap: 20px; flex-wrap: wrap; margin-bottom: 30px;">
+                                <div class="chart-card">
+                                    <h3><i class="fas fa-chart-bar"></i> User Distribution</h3>
+                                    <div class="chart-container">
+                                        <canvas id="userBarChart"></canvas>
+                                    </div>
+                                </div>
+
+                                <div class="chart-card">
+                                    <h3><i class="fas fa-chart-pie"></i> User Percentage</h3>
+                                    <div class="chart-container">
+                                        <canvas id="userPieChart"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Users Section -->
+                <div id="users-section" class="section active">
+                    <div class="section-header">
+                        <h2><i class="fas fa-users"></i> All Users</h2>
+                    </div>
+                    <div class="section-content">
+                         <div class="table-container">
+                            <div style="margin: 20px 30px;">
+                                <form method="get" action="/super_admin/dashboard">
+                                    <label for="role"><strong>Filter by Role:</strong></label>
+                                    <select name="role" id="role" onchange="this.form.submit()">
+                                        <option value="">All</option>
+                                        <option value="admin" {% if request.args.get('role')=='admin' %}selected{% endif %}>Admin</option>
+                                        <option value="architect" {% if request.args.get('role')=='architect' %}selected{% endif %}>Architect</option>
+                                        <option value="site_engineer" {% if request.args.get('role')=='site_engineer' %}selected{% endif %}>Site Engineer</option>
+                                        <option value="accountant" {% if request.args.get('role')=='accountant' %}selected{% endif %}>Accountant</option>
+                                    </select>
+                                </form>
+                            </div>
+
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th><i class="fas fa-user"></i> Name</th>
+                                        <th><i class="fas fa-envelope"></i> Email</th>
+                                        <th><i class="fas fa-phone"></i> Contact No</th>
+                                        <th><i class="fas fa-user-tag"></i> Role</th>
+                                        <th><i class="fas fa-toggle-on"></i> Status</th>
+                                        <th><i class="fas fa-cogs"></i> Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for user in users %}
+                                    <tr>
+                                        <td>{{ user.name }}</td>
+                                        <td>{{ user.email }}</td>
+                                        <td>{{ user.contact_no }}</td>
+                                        <td>{{ user.role }}</td>
+                                        <td>
+                                            <span class="status-badge status-{{ user.status }}">
+                                                {{ user.status }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <div class="action-buttons">
+                                                <a href="/super_admin/edit_user/{{ user.id }}" class="btn btn-edit">
+                                                    <i class="fas fa-edit"></i> Edit
+                                                </a>
+                                                {% if user.status == 'active' %}
+                                                <a href="/super_admin/toggle_user_status/{{ user.id }}/disabled" class="btn btn-disable">
+                                                    <i class="fas fa-ban"></i> Disable
+                                                </a>
+                                                {% else %}
+                                                <a href="/super_admin/toggle_user_status/{{ user.id }}/active" class="btn btn-enable">
+                                                    <i class="fas fa-check"></i> Enable
+                                                </a>
+                                                {% endif %}
+                                                <a href="/super_admin/delete_user/{{ user.id }}" class="btn btn-delete"
+                                                    onclick="return confirm('Are you sure you want to delete this user?')">
+                                                    <i class="fas fa-trash"></i> Delete
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% else %}
+                                    <tr>
+                                        <td colspan="6">
+                                            <div class="empty-state">
+                                                <i class="fas fa-users"></i>
+                                                <h3>No Users Found</h3>
+                                                <p>There are no users in the system yet.</p>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Architects Section -->
+                <div id="architects-section" class="section">
+                    <div class="section-header">
+                        <h2><i class="fas fa-drafting-compass"></i> Architects and Assigned Sites</h2>
+                    </div>
+                    <div class="section-content">
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th><i class="fas fa-user"></i> Architect Name</th>
+                                        <th><i class="fas fa-envelope"></i> Email</th>
+                                        <th><i class="fas fa-phone"></i> Contact No</th>
+                                        <th><i class="fas fa-toggle-on"></i> Status</th>
+                                        <th><i class="fas fa-project-diagram"></i> Project Name</th>
+                                        <th><i class="fas fa-building"></i> Site Name</th>
+                                        <th><i class="fas fa-map-marker-alt"></i> Location</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for arch in architects %}
+                                    <tr>
+                                        <td>{{ arch.architect_name }}</td>
+                                        <td>{{ arch.email }}</td>
+                                        <td>{{ arch.contact_no }}</td>
+                                        <td>
+                                            <span class="status-badge status-{{ arch.status }}">
+                                                {{ arch.status }}
+                                            </span>
+                                        </td>
+                                        <td>{{ arch.project_name or 'N/A' }}</td>
+                                        <td>{{ arch.site_name or 'N/A' }}</td>
+                                        <td>{{ arch.location or 'N/A' }}</td>
+                                    </tr>
+                                    {% else %}
+                                    <tr>
+                                        <td colspan="7">
+                                            <div class="empty-state">
+                                                <i class="fas fa-drafting-compass"></i>
+                                                <h3>No Architects Found</h3>
+                                                <p>There are no architects in the system yet.</p>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sites Section -->
+                <div id="sites-section" class="section">
+                    <div class="section-header">
+                        <h2><i class="fas fa-building"></i> All Sites</h2>
+                    </div>
+                    <div class="section-content">
+                        <div class="table-container">
+                        <table>
+                                <thead>
+                                    <tr>
+                                        <th><i class="fas fa-building"></i> Site Name</th>
+                                        <th><i class="fas fa-map-marker-alt"></i> Location</th>
+                                        <th><i class="fas fa-hard-hat"></i> Site Engineer</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for site in sites %}
+                                    <tr>
+                                        <td>{{ site.site_name }}</td>
+                                        <td>{{ site.location }}</td>
+                                        <td>{{ site.site_engineer_name or 'Unassigned' }}</td>
+                                    </tr>
+                                    {% else %}
+                                    <tr>
+                                        <td colspan="3">
+                                            <div class="empty-state">
+                                                <i class="fas fa-building"></i>
+                                                <h3>No Sites Found</h3>
+                                                <p>There are no sites in the system yet.</p>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    // Global variables
+    let sidebarCollapsed = false;
+    let mobileSidebarOpen = false;
+    let barChart, pieChart;
+
+    // Initialize page
+    document.addEventListener('DOMContentLoaded', function() {
+        // By default, the users section is active
+        showSection('users-section');
+
+        // Load stats data
+        fetchUserStats();
+    });
+
+    // Fetch user stats from API
+    function fetchUserStats() {
+        fetch('/api/user_stats')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                // Update stats cards
+                document.getElementById('admin-count').textContent = data.admin_count;
+                document.getElementById('architect-count').textContent = data.architect_count;
+                document.getElementById('engineer-count').textContent = data.engineer_count;
+                document.getElementById('accountant-count').textContent = data.accountant_count;
+
+                // Initialize charts with the data
+                initializeCharts(data);
+            })
+            .catch(error => {
+                console.error('Error fetching user stats:', error);
+            });
+    }
+
+    // Initialize charts with data
+    function initializeCharts(statsData) {
+        // Destroy existing charts if they exist
+        if (barChart) barChart.destroy();
+        if (pieChart) pieChart.destroy();
+
+        const userData = {
+            labels: ['Admins', 'Architects', 'Engineers', 'Accountants'],
+            datasets: [{
+                label: 'User Count',
+                data: [
+                    statsData.admin_count,
+                    statsData.architect_count,
+                    statsData.engineer_count,
+                    statsData.accountant_count
+                ],
+                backgroundColor: [
+                    'rgba(52, 152, 219, 0.7)',
+                    'rgba(155, 89, 182, 0.7)',
+                    'rgba(231, 76, 60, 0.7)',
+                    'rgba(39, 174, 96, 0.7)'
+                ],
+                borderColor: [
+                    'rgba(52, 152, 219, 1)',
+                    'rgba(155, 89, 182, 1)',
+                    'rgba(231, 76, 60, 1)',
+                    'rgba(39, 174, 96, 1)'
+                ],
+                borderWidth: 1
+            }]
+        };
+
+        // Bar Chart
+        const barCtx = document.getElementById('userBarChart').getContext('2d');
+        barChart = new Chart(barCtx, {
+            type: 'bar',
+            data: userData,
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            stepSize: 1,
+                            precision: 0
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return context.parsed.y + ' users';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // Pie Chart
+        const pieCtx = document.getElementById('userPieChart').getContext('2d');
+        pieChart = new Chart(pieCtx, {
+            type: 'pie',
+            data: userData,
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'right'
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const label = context.label || '';
+                                const value = context.raw || 0;
+                                const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                const percentage = Math.round((value / total) * 100);
+                                return `${label}: ${value} (${percentage}%)`;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    // Show section function
+    function showSection(sectionId) {
+        // Hide all sections
+        const sections = document.querySelectorAll('.section');
+        sections.forEach(section => {
+            section.classList.remove('active');
+        });
+
+        // Show selected section
+        const selectedSection = document.getElementById(sectionId);
+        if (selectedSection) {
+            selectedSection.classList.add('active');
+        }
+
+        // Update navigation
+        const navLinks = document.querySelectorAll('.nav-link');
+        navLinks.forEach(link => {
+            link.classList.remove('active');
+        });
+
+        // Find and activate the clicked nav link
+        const activeLink = document.querySelector(`[onclick="showSection('${sectionId}')"]`);
+        if (activeLink) {
+            activeLink.classList.add('active');
+        }
+
+        // Update page title
+        const pageTitle = document.getElementById('pageTitle');
+        const sectionTitles = {
+            'dashboard-section': '<i class="fas fa-tachometer-alt"></i> Dashboard',
+            'users-section': '<i class="fas fa-users"></i> Users Management',
+            'architects-section': '<i class="fas fa-drafting-compass"></i> Architects Management',
+            'sites-section': '<i class="fas fa-building"></i> Sites Management'
+        };
+
+        if (sectionTitles[sectionId]) {
+            pageTitle.innerHTML = sectionTitles[sectionId];
+        }
+
+        // Load stats if dashboard is shown
+        if (sectionId === 'dashboard-section') {
+            fetchUserStats();
+        }
+
+        // Close mobile sidebar after navigation
+        if (window.innerWidth <= 768) {
+            closeMobileSidebar();
+        }
+    }
+
+    // Toggle sidebar collapse
+    function toggleSidebar() {
+        const sidebar = document.getElementById('sidebar');
+        const mainContent = document.getElementById('mainContent');
+        const toggleBtn = document.querySelector('.sidebar-toggle i');
+
+        sidebarCollapsed = !sidebarCollapsed;
+
+        if (sidebarCollapsed) {
+            sidebar.classList.add('collapsed');
+            mainContent.classList.add('expanded');
+            toggleBtn.classList.remove('fa-angle-left');
+            toggleBtn.classList.add('fa-angle-right');
+        } else {
+            sidebar.classList.remove('collapsed');
+            mainContent.classList.remove('expanded');
+            toggleBtn.classList.remove('fa-angle-right');
+            toggleBtn.classList.add('fa-angle-left');
+        }
+    }
+
+    // Toggle mobile sidebar
+    function toggleMobileSidebar() {
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.querySelector('.mobile-overlay');
+
+        mobileSidebarOpen = !mobileSidebarOpen;
+
+        if (mobileSidebarOpen) {
+            sidebar.classList.add('mobile-open');
+            overlay.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        } else {
+            sidebar.classList.remove('mobile-open');
+            overlay.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+    }
+
+    // Close mobile sidebar
+    function closeMobileSidebar() {
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.querySelector('.mobile-overlay');
+
+        mobileSidebarOpen = false;
+        sidebar.classList.remove('mobile-open');
+        overlay.classList.remove('active');
+        document.body.style.overflow = '';
+    }
+
+    // Handle window resize
+    window.addEventListener('resize', function() {
+        if (window.innerWidth > 768) {
+            closeMobileSidebar();
+        }
+    });
+
+    // Handle escape key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && mobileSidebarOpen) {
+            closeMobileSidebar();
+        }
+    });
+    </script>
+</body>
+</html>

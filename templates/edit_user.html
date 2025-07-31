@@ -1,0 +1,26 @@
+<!-- templates/edit_user.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Edit User</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+</head>
+<body>
+<div class="container mt-5">
+    <h3>Edit User</h3>
+    <form method="POST">
+        <input name="name" class="form-control mb-3" value="{{ user.name }}" required>
+        <input name="email" class="form-control mb-3" value="{{ user.email }}" required>
+        <input name="contact_no" class="form-control mb-3" value="{{ user.contact_no }}">
+        <select name="role" class="form-select mb-3" required>
+            <option value="admin" {% if user.role == 'admin' %}selected{% endif %}>Admin</option>
+            <option value="architect" {% if user.role == 'architect' %}selected{% endif %}>Architect</option>
+            <option value="site_engineer" {% if user.role == 'site_engineer' %}selected{% endif %}>Site Engineer</option>
+            <option value="accountant" {% if user.role == 'accountant' %}selected{% endif %}>Accountant</option>
+            <option value="project_manager" {% if user.role == 'project_manager' %}selected{% endif %}>Project Manager</option>
+        </select>
+        <button class="btn btn-primary w-100">Update User</button>
+    </form>
+</div>
+</body>
+</html>

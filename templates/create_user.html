@@ -4,1081 +4,203 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Create User - Super Admin</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
-        :root {
-            --primary-color: #2c3e50;
-            --secondary-color: #3498db;
-            --success-color: #27ae60;
-            --warning-color: #f39c12;
-            --danger-color: #e74c3c;
-            --light-bg: #f8f9fa;
-            --dark-text: #2c3e50;
-            --border-color: #e0e0e0;
-            --sidebar-width: 260px;
-            --transition: all 0.3s ease;
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: var(--dark-text);
-            line-height: 1.6;
-            min-height: 100vh;
-        }
-
-        .dashboard-container {
-            display: flex;
-            min-height: 100vh;
-            position: relative;
-        }
-
-        /* Sidebar Styles */
-        .sidebar {
-            width: var(--sidebar-width);
-            background: linear-gradient(135deg, var(--primary-color), #34495e);
-            color: white;
-            position: fixed;
-            height: 100vh;
-            left: 0;
-            top: 0;
-            z-index: 1000;
-            transition: var(--transition);
-            box-shadow: 2px 0 20px rgba(0,0,0,0.1);
-            overflow-y: auto;
-        }
-
-        .sidebar.collapsed {
-            width: 70px;
-        }
-
-        .sidebar-header {
-            padding: 25px 20px;
-            text-align: center;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-            background: rgba(0,0,0,0.2);
-        }
-
-        .sidebar-header h2 {
-            font-size: 1.4rem;
-            font-weight: 600;
-            margin-bottom: 8px;
-            transition: var(--transition);
-        }
-
-        .sidebar.collapsed .sidebar-header h2,
-        .sidebar.collapsed .sidebar-header p {
-            display: none;
-        }
-
-        .sidebar-header p {
-            font-size: 0.9rem;
-            opacity: 0.8;
-            margin: 0;
-        }
-
-        .sidebar-toggle {
-            position: absolute;
-            top: 25px;
-            right: -15px;
-            background: white;
-            color: var(--primary-color);
-            border: none;
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
-            cursor: pointer;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 1001;
-            transition: var(--transition);
-        }
-
-        .sidebar-toggle:hover {
-            background: var(--secondary-color);
-            color: white;
-            transform: scale(1.1);
-        }
-
-        .sidebar-nav {
-            padding: 20px 0;
-        }
-
-        .sidebar-nav a {
-            display: flex;
-            align-items: center;
-            color: rgba(255,255,255,0.8);
-            text-decoration: none;
-            padding: 15px 20px;
-            margin: 2px 0;
-            transition: var(--transition);
-            border-left: 3px solid transparent;
-        }
-
-        .sidebar-nav a:hover {
-            background: rgba(255,255,255,0.1);
-            border-left-color: var(--secondary-color);
-            color: white;
-        }
-
-        .sidebar-nav a.active {
-            background: rgba(52, 152, 219, 0.2);
-            border-left-color: var(--secondary-color);
-            color: white;
-        }
-
-        .sidebar-nav a i {
-            width: 20px;
-            margin-right: 15px;
-            text-align: center;
-            transition: var(--transition);
-        }
-
-        .sidebar.collapsed .sidebar-nav a span {
-            display: none;
-        }
-
-        .sidebar.collapsed .sidebar-nav a {
-            justify-content: center;
-            padding: 15px 20px;
-        }
-
-        .sidebar.collapsed .sidebar-nav a i {
-            margin-right: 0;
-        }
-
-        /* Main Content */
-        .main-content {
-            flex: 1;
-            margin-left: var(--sidebar-width);
-            transition: var(--transition);
-            min-height: 100vh;
-        }
-
-        .main-content.expanded {
-            margin-left: 70px;
-        }
-
-        .content-header {
-            background: rgba(255,255,255,0.95);
-            backdrop-filter: blur(10px);
-            padding: 25px 30px;
-            border-bottom: 1px solid var(--border-color);
-            box-shadow: 0 2px 20px rgba(0,0,0,0.1);
-            position: sticky;
-            top: 0;
-            z-index: 999;
-        }
-
-        .content-header h1 {
-            color: var(--dark-text);
-            font-size: 2rem;
-            font-weight: 600;
-            margin: 0;
-            display: flex;
-            align-items: center;
-        }
-
-        .content-header h1 i {
-            margin-right: 15px;
-            color: var(--secondary-color);
-        }
-
-        .content-body {
-            padding: 40px 30px;
-        }
-
-        /* Form Section */
         .form-section {
-            background: rgba(255,255,255,0.95);
-            backdrop-filter: blur(10px);
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+            padding: 30px;
             margin-bottom: 30px;
-            overflow: hidden;
-            animation: slideUp 0.6s ease;
         }
-
-        @keyframes slideUp {
-            from { 
-                opacity: 0; 
-                transform: translateY(30px); 
-            }
-            to { 
-                opacity: 1; 
-                transform: translateY(0); 
-            }
-        }
-
         .form-header {
-            background: linear-gradient(135deg, var(--primary-color), #34495e);
-            color: white;
-            padding: 25px 30px;
-            display: flex;
-            align-items: center;
-        }
-
-        .form-header h2 {
-            font-size: 1.5rem;
-            font-weight: 600;
-            margin: 0;
-            display: flex;
-            align-items: center;
-        }
-
-        .form-header h2 i {
-            margin-right: 12px;
-        }
-
-        .form-content {
-            padding: 40px 30px;
-        }
-
-        .form-container {
-            max-width: 800px;
-            margin: 0 auto;
-        }
-
-        .form-section-divider {
-            border-bottom: 2px solid var(--border-color);
-            margin: 35px 0 25px 0;
+            border-bottom: 1px solid #eee;
             padding-bottom: 15px;
-        }
-
-        .form-section-title {
-            font-size: 1.2rem;
-            font-weight: 600;
-            color: var(--primary-color);
-            margin-bottom: 20px;
-            display: flex;
-            align-items: center;
-        }
-
-        .form-section-title i {
-            margin-right: 10px;
-            color: var(--secondary-color);
-        }
-
-        .form-row {
             margin-bottom: 25px;
         }
-
-        .form-row-group {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-        }
-
-        .form-row label {
-            display: block;
-            margin-bottom: 8px;
+        .section-title {
+            color: #2c3e50;
             font-weight: 600;
-            color: var(--dark-text);
-            font-size: 0.95rem;
+            margin: 25px 0 15px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #f0f0f0;
         }
-
-        .form-row label i {
-            margin-right: 8px;
-            color: var(--secondary-color);
-            width: 16px;
-        }
-
-        .form-input, .form-select {
-            width: 100%;
-            padding: 15px 20px;
-            border: 2px solid var(--border-color);
-            border-radius: 10px;
-            font-size: 1rem;
-            transition: var(--transition);
-            background: white;
-            color: var(--dark-text);
-        }
-
-        .form-input:focus, .form-select:focus {
-            outline: none;
-            border-color: var(--secondary-color);
-            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
-            transform: translateY(-2px);
-        }
-
-        .form-input:hover, .form-select:hover {
-            border-color: #bdc3c7;
-        }
-
-        .form-select {
-            cursor: pointer;
-        }
-
-        .password-container {
-            position: relative;
-        }
-
-        .password-toggle {
-            position: absolute;
-            right: 15px;
-            top: 50%;
-            transform: translateY(-50%);
-            background: none;
-            border: none;
-            color: #666;
-            cursor: pointer;
-            font-size: 1.1rem;
-            padding: 5px;
-            transition: var(--transition);
-        }
-
-        .password-toggle:hover {
-            color: var(--secondary-color);
-            transform: translateY(-50%) scale(1.1);
-        }
-
-        .form-actions {
-            text-align: center;
-            margin-top: 35px;
-            padding-top: 25px;
-            border-top: 1px solid var(--border-color);
-        }
-
-        .btn {
-            padding: 15px 35px;
-            border: none;
-            border-radius: 10px;
-            font-size: 1rem;
-            font-weight: 600;
-            text-decoration: none;
-            cursor: pointer;
-            transition: var(--transition);
-            display: inline-flex;
-            align-items: center;
-            gap: 10px;
-            min-width: 160px;
-            justify-content: center;
-        }
-
-        .btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
-        }
-
-        .btn-primary {
-            background: linear-gradient(135deg, var(--secondary-color), #2980b9);
-            color: white;
-        }
-
-        .btn-primary:hover {
-            background: linear-gradient(135deg, #2980b9, #1f618d);
-        }
-
-        .btn-secondary {
-            background: linear-gradient(135deg, #95a5a6, #7f8c8d);
-            color: white;
-            margin-left: 15px;
-        }
-
-        .btn-secondary:hover {
-            background: linear-gradient(135deg, #7f8c8d, #6c7b7d);
-        }
-
-        /* Flash Messages */
-        .flash-messages {
-            margin-bottom: 25px;
-        }
-
-        .flash-message {
-            padding: 15px 20px;
-            margin-bottom: 15px;
-            border-radius: 10px;
-            font-weight: 500;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            animation: slideIn 0.5s ease;
-        }
-
-        @keyframes slideIn {
-            from { 
-                opacity: 0; 
-                transform: translateX(-20px); 
-            }
-            to { 
-                opacity: 1; 
-                transform: translateX(0); 
-            }
-        }
-
-        .flash-success {
-            background: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-        }
-
-        .flash-error {
-            background: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-        }
-
-        .flash-warning {
-            background: #fff3cd;
-            color: #856404;
-            border: 1px solid #ffeaa7;
-        }
-
-        .flash-info {
-            background: #cce7ff;
-            color: #004085;
-            border: 1px solid #b3d9ff;
-        }
-
-        /* Mobile Overlay */
-        .mobile-overlay {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.5);
-            z-index: 999;
-        }
-
-        .mobile-overlay.active {
-            display: block;
-        }
-
-        /* Mobile Menu Button */
-        .mobile-menu-btn {
-            display: none;
-            position: fixed;
-            top: 20px;
-            left: 20px;
-            background: var(--primary-color);
-            color: white;
-            border: none;
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            cursor: pointer;
-            z-index: 1001;
-            box-shadow: 0 2px 15px rgba(0,0,0,0.2);
-            align-items: center;
-            justify-content: center;
-        }
-
-        .mobile-menu-btn:hover {
-            background: var(--secondary-color);
-            transform: scale(1.1);
-        }
-
-        /* Loading State */
-        .btn.loading {
-            opacity: 0.8;
-            pointer-events: none;
-        }
-
-        .btn.loading::after {
-            content: "";
-            width: 16px;
-            height: 16px;
-            border: 2px solid transparent;
-            border-top: 2px solid currentColor;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin-left: 8px;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        /* Field Validation */
-        .form-input.valid {
-            border-color: var(--success-color);
-        }
-
-        .form-input.invalid {
-            border-color: var(--danger-color);
-        }
-
-        /* Responsive Design */
-        @media (max-width: 768px) {
-            .sidebar {
-                width: 280px;
-                transform: translateX(-100%);
-            }
-            
-            .sidebar.mobile-open {
-                transform: translateX(0);
-            }
-            
-            .main-content {
-                margin-left: 0;
-            }
-            
-            .main-content.expanded {
-                margin-left: 0;
-            }
-            
-            .mobile-menu-btn {
-                display: flex;
-            }
-            
-            .sidebar-toggle {
-                display: none;
-            }
-            
-            .content-header {
-                padding: 20px;
-                padding-left: 80px;
-            }
-            
-            .content-header h1 {
-                font-size: 1.5rem;
-            }
-            
-            .content-body {
-                padding: 20px 15px;
-            }
-            
-            .form-content {
-                padding: 25px 20px;
-            }
-
-            .form-row-group {
-                grid-template-columns: 1fr;
-                gap: 0;
-            }
-            
-            .btn {
-                width: 100%;
-                margin-bottom: 10px;
-            }
-            
-            .btn-secondary {
-                margin-left: 0;
-            }
+        .required-field::after {
+            content: " *";
+            color: red;
         }
     </style>
 </head>
 <body>
-    <div class="dashboard-container">
-        <!-- Mobile Menu Button -->
-        <button class="mobile-menu-btn" onclick="toggleMobileSidebar()">
-            <i class="fas fa-bars"></i>
-        </button>
-
-        <!-- Mobile Overlay -->
-        <div class="mobile-overlay" onclick="closeMobileSidebar()"></div>
-
-        <!-- Sidebar -->
-        <div class="sidebar" id="sidebar">
-            <button class="sidebar-toggle" onclick="toggleSidebar()">
-                <i class="fas fa-angle-left"></i>
-            </button>
-            <div class="sidebar-header">
-                <h2><i class="fas fa-user-shield"></i> Super Admin</h2>
-                <p>Control Panel</p>
-            </div>
-            <nav class="sidebar-nav">
-                <a href="/super_admin/dashboard" class="nav-link">
-                    <i class="fas fa-tachometer-alt"></i><span>Dashboard</span>
-                </a>
-                <a href="/super_admin/create_user" class="nav-link active">
-                    <i class="fas fa-user-plus"></i><span>Create User</span>
-                </a>
-                <a href="/super_admin/dashboard?role=admin" class="nav-link">
-                    <i class="fas fa-users-cog"></i><span>Admins</span>
-                </a>
-                <a href="/super_admin/dashboard?role=architect" class="nav-link">
-                    <i class="fas fa-drafting-compass"></i><span>Architects</span>
-                </a>
-                <a href="/super_admin/dashboard?role=site_engineer" class="nav-link">
-                    <i class="fas fa-hard-hat"></i><span>Site Engineers</span>
-                </a>
-                <a href="/logout" class="nav-link">
-                    <i class="fas fa-sign-out-alt"></i><span>Logout</span>
-                </a>
-            </nav>
-        </div>
-
-        <!-- Main Content -->
-        <div class="main-content" id="mainContent">
-            <div class="content-header">
-                <h1><i class="fas fa-user-plus"></i> Create User</h1>
-            </div>
-
-            <div class="content-body">
+    <div class="container py-5">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
                 <div class="form-section">
                     <div class="form-header">
-                        <h2><i class="fas fa-user-plus"></i> New User Registration</h2>
+                        <h3><i class="fas fa-user-plus me-2"></i> Create New User</h3>
                     </div>
-                    <div class="form-content">
-                        <!-- Flash Messages -->
-                        <div class="flash-messages" id="flashMessages"></div>
 
-                        <form id="createUserForm" method="POST" action="/super_admin/create_user" class="form-container">
-                            <!-- User Information Section -->
-                            <div class="form-section-title">
-                                <i class="fas fa-user"></i>User Information
+                    <!-- Flash Messages -->
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                        {% if messages %}
+                            {% for category, message in messages %}
+                                <div class="alert alert-{{ category }} alert-dismissible fade show">
+                                    {{ message }}
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+                    {% endwith %}
+
+                    <form method="POST" class="needs-validation" novalidate>
+                        <!-- User Information Section -->
+                        <h5 class="section-title"><i class="fas fa-user me-2"></i>User Information</h5>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label for="name" class="form-label required-field">Full Name</label>
+                                <input type="text" class="form-control" id="name" name="name" required>
+                                <div class="invalid-feedback">Please enter full name</div>
                             </div>
-
-                            <div class="form-row-group">
-                                <div class="form-row">
-                                    <label for="name">
-                                        <i class="fas fa-user"></i>Full Name
-                                    </label>
-                                    <input type="text" name="name" id="name" class="form-input" required 
-                                           placeholder="Enter full name" maxlength="100">
-                                </div>
-
-                                <div class="form-row">
-                                    <label for="email">
-                                        <i class="fas fa-envelope"></i>Email Address
-                                    </label>
-                                    <input type="email" name="email" id="email" class="form-input" required 
-                                           placeholder="Enter email address" maxlength="100">
-                                </div>
+                            <div class="col-md-6">
+                                <label for="email" class="form-label required-field">Email</label>
+                                <input type="email" class="form-control" id="email" name="email" required>
+                                <div class="invalid-feedback">Please enter a valid email</div>
                             </div>
-
-                            <div class="form-row-group">
-                                <div class="form-row">
-                                    <label for="contact_no">
-                                        <i class="fas fa-phone"></i>Contact Number
-                                    </label>
-                                    <input type="tel" name="contact_no" id="contact_no" class="form-input" required 
-                                           placeholder="Enter 10-digit contact number" maxlength="10">
-                                </div>
-
-                                <div class="form-row">
-                                    <label for="role">
-                                        <i class="fas fa-user-tag"></i>Role
-                                    </label>
-                                    <select name="role" id="role" class="form-select" required>
-                                        <option value="">Select Role</option>
-                                        <option value="admin">Admin</option>
-                                        <!-- <option value="architect">Architect</option>
-                                        <option value="site_engineer">Site Engineer</option>
-                                        <option value="accountant">Accountant</option> -->
-                                    </select>
-                                </div>
+                            <div class="col-md-6">
+                                <label for="contact_no" class="form-label required-field">Contact Number</label>
+                                <input type="tel" class="form-control" id="contact_no" name="contact_no" required>
+                                <div class="invalid-feedback">Please enter contact number</div>
                             </div>
-
-                            <div class="form-row">
-                                <label for="password">
-                                    <i class="fas fa-lock"></i>Password
-                                </label>
-                                <div class="password-container">
-                                    <input type="password" name="password" id="password" class="form-input" required 
-                                           placeholder="Enter password (minimum 6 characters)" minlength="6">
-                                    <button type="button" class="password-toggle" onclick="togglePassword()">
-                                        <i class="fas fa-eye" id="passwordToggleIcon"></i>
+                            <div class="col-md-6">
+                                <label for="password" class="form-label required-field">Password</label>
+                                <div class="input-group">
+                                    <input type="password" class="form-control" id="password" name="password" required>
+                                    <button class="btn btn-outline-secondary" type="button" id="togglePassword">
+                                        <i class="fas fa-eye"></i>
                                     </button>
                                 </div>
+                                <div class="invalid-feedback">Password must be at least 6 characters</div>
                             </div>
-
-                            <!-- Company Information Section -->
-                            <div class="form-section-divider">
-                                <div class="form-section-title">
-                                    <i class="fas fa-building"></i>Organization Information
-                                </div>
+                            <div class="col-md-6">
+                                <label for="role" class="form-label required-field">Role</label>
+                                <select class="form-select" id="role" name="role" required>
+                                    <option value="">Select Role</option>
+                                    <option value="admin">Admin</option>
+                                    <option value="architect">Architect</option>
+                                    <option value="site_engineer">Site Engineer</option>
+                                    <option value="accountant">Accountant</option>
+                                    <option value="project_manager">Project Manager</option>
+                                </select>
+                                <div class="invalid-feedback">Please select a role</div>
                             </div>
+                        </div>
 
-                            <div class="form-row">
-                                <label for="company_name">
-                                    <i class="fas fa-building"></i>Company Name
-                                </label>
-                                <input type="text" name="company_name" id="company_name" class="form-input" required 
-                                       placeholder="Enter company name" maxlength="100">
+                        <!-- Organization Information Section -->
+                        <h5 class="section-title mt-4"><i class="fas fa-building me-2"></i>Organization Information</h5>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label for="company_name" class="form-label required-field">Company Name</label>
+                                <input type="text" class="form-control" id="company_name" name="company_name" required>
+                                <div class="invalid-feedback">Please enter company name</div>
                             </div>
-
-                            <div class="form-row">
-                                <label for="company_address">
-                                    <i class="fas fa-map-marker-alt"></i>Company Address
-                                </label>
-                                <textarea name="company_address" id="company_address" class="form-input" required 
-                                          placeholder="Enter complete company address" rows="3" maxlength="500"></textarea>
+                            <div class="col-md-6">
+                                <label for="company_email" class="form-label required-field">Company Email</label>
+                                <input type="email" class="form-control" id="company_email" name="company_email" required>
+                                <div class="invalid-feedback">Please enter a valid company email</div>
                             </div>
-
-                            <div class="form-row-group">
-                                <div class="form-row">
-                                    <label for="company_phone">
-                                        <i class="fas fa-phone-office"></i>Company Phone
-                                    </label>
-                                    <input type="tel" name="company_phone" id="company_phone" class="form-input" required 
-                                           placeholder="Enter company phone number" maxlength="15">
-                                </div>
-
-                                <div class="form-row">
-                                    <label for="company_email">
-                                        <i class="fas fa-envelope-open"></i>Company Email
-                                    </label>
-                                    <input type="email" name="company_email" id="company_email" class="form-input" required 
-                                           placeholder="Enter company email address" maxlength="100">
-                                </div>
+                            <div class="col-12">
+                                <label for="company_address" class="form-label required-field">Company Address</label>
+                                <textarea class="form-control" id="company_address" name="company_address" rows="3" required></textarea>
+                                <div class="invalid-feedback">Please enter company address</div>
                             </div>
-
-                            <div class="form-actions">
-                                <button type="submit" class="btn btn-primary" id="submitBtn">
-                                    <i class="fas fa-check-circle"></i> Create User
-                                </button>
-                                <button type="button" class="btn btn-secondary" onclick="resetForm()">
-                                    <i class="fas fa-undo"></i> Reset Form
-                                </button>
+                            <div class="col-md-6">
+                                <label for="company_phone" class="form-label required-field">Company Phone</label>
+                                <input type="tel" class="form-control" id="company_phone" name="company_phone" required>
+                                <div class="invalid-feedback">Please enter company phone</div>
                             </div>
-                        </form>
-                    </div>
+                            <div class="col-md-6">
+                                <label for="gst_number" class="form-label">GST Number</label>
+                                <input type="text" class="form-control" id="gst_number" name="gst_number">
+                            </div>
+                        </div>
+
+                        <!-- Bank Details Section -->
+                        <h5 class="section-title mt-4"><i class="fas fa-university me-2"></i>Bank Details</h5>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label for="bank_name" class="form-label">Bank Name</label>
+                                <input type="text" class="form-control" id="bank_name" name="bank_name">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="bank_account" class="form-label">Account Number</label>
+                                <input type="text" class="form-control" id="bank_account" name="bank_account">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="ifsc_code" class="form-label">IFSC Code</label>
+                                <input type="text" class="form-control" id="ifsc_code" name="ifsc_code">
+                            </div>
+                        </div>
+
+                        <!-- Terms & Conditions -->
+                        <h5 class="section-title mt-4"><i class="fas fa-file-contract me-2"></i>Terms & Conditions</h5>
+                        <div class="mb-3">
+                            <label for="terms_conditions" class="form-label">Default Terms</label>
+                            <textarea class="form-control" id="terms_conditions" name="terms_conditions" rows="3"></textarea>
+                        </div>
+
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+                            <button type="reset" class="btn btn-secondary me-md-2">Reset</button>
+                            <button type="submit" class="btn btn-primary">Create User</button>
+                        </div>
+                    </form>
                 </div>
             </div>
         </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // Global variables
-        let sidebarCollapsed = false;
-        let mobileSidebarOpen = false;
+        // Form validation
+        (function () {
+            'use strict'
+            const forms = document.querySelectorAll('.needs-validation')
+            
+            Array.from(forms).forEach(form => {
+                form.addEventListener('submit', event => {
+                    if (!form.checkValidity()) {
+                        event.preventDefault()
+                        event.stopPropagation()
+                    }
+                    form.classList.add('was-validated')
+                }, false)
+            })
+        })()
 
-        // Sidebar toggle functions
-        function toggleSidebar() {
-            const sidebar = document.getElementById('sidebar');
-            const mainContent = document.getElementById('mainContent');
-            const toggleBtn = document.querySelector('.sidebar-toggle i');
-            
-            sidebarCollapsed = !sidebarCollapsed;
-            
-            if (sidebarCollapsed) {
-                sidebar.classList.add('collapsed');
-                mainContent.classList.add('expanded');
-                toggleBtn.classList.remove('fa-angle-left');
-                toggleBtn.classList.add('fa-angle-right');
-            } else {
-                sidebar.classList.remove('collapsed');
-                mainContent.classList.remove('expanded');
-                toggleBtn.classList.remove('fa-angle-right');
-                toggleBtn.classList.add('fa-angle-left');
-            }
-        }
-
-        function toggleMobileSidebar() {
-            const sidebar = document.getElementById('sidebar');
-            const overlay = document.querySelector('.mobile-overlay');
-            
-            mobileSidebarOpen = !mobileSidebarOpen;
-            
-            if (mobileSidebarOpen) {
-                sidebar.classList.add('mobile-open');
-                overlay.classList.add('active');
-                document.body.style.overflow = 'hidden';
-            } else {
-                sidebar.classList.remove('mobile-open');
-                overlay.classList.remove('active');
-                document.body.style.overflow = '';
-            }
-        }
-
-        function closeMobileSidebar() {
-            const sidebar = document.getElementById('sidebar');
-            const overlay = document.querySelector('.mobile-overlay');
-            
-            mobileSidebarOpen = false;
-            sidebar.classList.remove('mobile-open');
-            overlay.classList.remove('active');
-            document.body.style.overflow = '';
-        }
-
-        // Password toggle function
-        function togglePassword() {
+        // Password toggle
+        document.getElementById('togglePassword').addEventListener('click', function() {
             const passwordInput = document.getElementById('password');
-            const toggleIcon = document.getElementById('passwordToggleIcon');
+            const icon = this.querySelector('i');
             
             if (passwordInput.type === 'password') {
                 passwordInput.type = 'text';
-                toggleIcon.classList.remove('fa-eye');
-                toggleIcon.classList.add('fa-eye-slash');
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
             } else {
                 passwordInput.type = 'password';
-                toggleIcon.classList.remove('fa-eye-slash');
-                toggleIcon.classList.add('fa-eye');
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
             }
-        }
-
-        // Form validation and submission
-        document.getElementById('createUserForm').addEventListener('submit', function(e) {
-            // Client-side validation
-            if (!validateForm()) {
-                e.preventDefault();
-                return false;
-            }
-            
-            // Show loading state
-            const submitBtn = document.getElementById('submitBtn');
-            submitBtn.classList.add('loading');
-            submitBtn.disabled = true;
-            
-            // Form will submit normally to Flask backend
-            // Loading state will be reset on page reload/redirect
         });
 
-        // Form validation
-        function validateForm() {
-            const name = document.getElementById('name').value.trim();
-            const email = document.getElementById('email').value.trim();
-            const contact = document.getElementById('contact_no').value.trim();
-            const password = document.getElementById('password').value;
-            const role = document.getElementById('role').value;
-            const companyName = document.getElementById('company_name').value.trim();
-            const companyAddress = document.getElementById('company_address').value.trim();
-            const companyPhone = document.getElementById('company_phone').value.trim();
-            const companyEmail = document.getElementById('company_email').value.trim();
-            
-            // Clear previous messages
-            clearFlashMessages();
-            
-            // Validate required fields
-            if (!name || !email || !contact || !password || !role || !companyName || !companyAddress || !companyPhone || !companyEmail) {
-                showFlashMessage('Please fill in all required fields.', 'error');
-                return false;
-            }
-            
-            // Validate name (only letters and spaces)
-            const nameRegex = /^[a-zA-Z\s]{2,100}$/;
-            if (!nameRegex.test(name)) {
-                showFlashMessage('Name should contain only letters and spaces (2-100 characters).', 'error');
-                return false;
-            }
-            
-            // Validate email format
-            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            if (!emailRegex.test(email)) {
-                showFlashMessage('Please enter a valid email address.', 'error');
-                return false;
-            }
-            
-            // Validate company email format
-            if (!emailRegex.test(companyEmail)) {
-                showFlashMessage('Please enter a valid company email address.', 'error');
-                return false;
-            }
-            
-            // Validate password length and strength
-            if (password.length < 6) {
-                showFlashMessage('Password must be at least 6 characters long.', 'error');
-                return false;
-            }
-            
-            // Validate contact number (10 digits)
-            const contactRegex = /^\d{10}$/;
-            if (!contactRegex.test(contact)) {
-                showFlashMessage('Contact number must be exactly 10 digits.', 'error');
-                return false;
-            }
-
-            // Validate company name
-            if (companyName.length < 2 || companyName.length > 100) {
-                showFlashMessage('Company name must be between 2-100 characters.', 'error');
-                return false;
-            }
-
-            // Validate company address
-            if (companyAddress.length < 10 || companyAddress.length > 500) {
-                showFlashMessage('Company address must be between 10-500 characters.', 'error');
-                return false;
-            }
-
-            // Validate company phone
-            const phoneRegex = /^[\d\s\-\+\(\)]{10,15}$/;
-            if (!phoneRegex.test(companyPhone)) {
-                showFlashMessage('Please enter a valid company phone number.', 'error');
-                return false;
-            }
-            
-            return true;
-        }
-
-        // Flash message functions
-        function showFlashMessage(message, type) {
-            const flashContainer = document.getElementById('flashMessages');
-            const flashElement = document.createElement('div');
-            flashElement.className = `flash-message flash-${type}`;
-            
-            const icon = getFlashIcon(type);
-            flashElement.innerHTML = `<i class="${icon}"></i> ${message}`;
-            
-            flashContainer.appendChild(flashElement);
-            
-            // Auto-remove after 5 seconds
-            setTimeout(() => {
-                flashElement.remove();
-            }, 5000);
-        }
-
-        function clearFlashMessages() {
-            const flashContainer = document.getElementById('flashMessages');
-            flashContainer.innerHTML = '';
-        }
-
-        function getFlashIcon(type) {
-            switch (type) {
-                case 'success': return 'fas fa-check-circle';
-                case 'error': return 'fas fa-exclamation-circle';
-                case 'warning': return 'fas fa-exclamation-triangle';
-                case 'info': return 'fas fa-info-circle';
-                default: return 'fas fa-info-circle';
-            }
-        }
-
-        // Reset form function
-        function resetForm() {
-            document.getElementById('createUserForm').reset();
-            clearFlashMessages();
-            
-            // Reset field styling
-            const inputs = document.querySelectorAll('.form-input, .form-select');
-            inputs.forEach(input => {
-                input.classList.remove('valid', 'invalid');
-            });
-            
-            // Focus on first input
-            document.getElementById('name').focus();
-        }
-
-        // Format contact number as user types
+        // Phone number validation
         document.getElementById('contact_no').addEventListener('input', function(e) {
-            let value = e.target.value.replace(/\D/g, '');
-            if (value.length > 10) {
-                value = value.slice(0, 10);
-            }
-            e.target.value = value;
+            this.value = this.value.replace(/\D/g, '').slice(0, 10);
         });
 
-        // Format company phone as user types
         document.getElementById('company_phone').addEventListener('input', function(e) {
-            let value = e.target.value.replace(/[^\d\s\-\+\(\)]/g, '');
-            if (value.length > 15) {
-                value = value.slice(0, 15);
-            }
-            e.target.value = value;
-        });
-
-        // Real-time validation
-        document.addEventListener('DOMContentLoaded', function() {
-            const inputs = document.querySelectorAll('.form-input, .form-select');
-            
-            inputs.forEach(input => {
-                input.addEventListener('blur', function() {
-                    validateField(this);
-                });
-                
-                input.addEventListener('input', function() {
-                    if (this.classList.contains('invalid')) {
-                        validateField(this);
-                    }
-                });
-            });
-            
-            // Focus on first input
-            document.getElementById('name').focus();
-        });
-
-        // Individual field validation
-        function validateField(field) {
-            const value = field.value.trim();
-            
-            // Remove previous styling
-            field.classList.remove('valid', 'invalid');
-            
-            if (field.hasAttribute('required') && !value) {
-                field.classList.add('invalid');
-                return false;
-            }
-            
-            // Specific validations
-            if (field.id === 'name' && value) {
-                const nameRegex = /^[a-zA-Z\s]{2,100}$/;
-                if (!nameRegex.test(value)) {
-                    field.classList.add('invalid');
-                    return false;
-                }
-            }
-            
-            if (field.type === 'email' && value) {
-                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-                if (!emailRegex.test(value)) {
-                    field.classList.add('invalid');
-                    return false;
-                }
-            }
-            
-            if (field.id === 'contact_no' && value) {
-                const contactRegex = /^\d{10}$/;
-                if (!contactRegex.test(value)) {
-                    field.classList.add('invalid');
-                    return false;
-                }
-            }
-
-            if (field.id === 'company_phone' && value) {
-                const phoneRegex = /^[\d\s\-\+\(\)]{10,15}$/;
-                if (!phoneRegex.test(value)) {
-                    field.classList.add('invalid');
-                    return false;
-                }
-            }
-
-            if (field.id === 'company_name' && value) {
-                if (value.length < 2 || value.length > 100) {
-                    field.classList.add('invalid');
-                    return false;
-                }
-            }
-
-            if (field.id === 'company_address' && value) {
-                if (value.length < 10 || value.length > 500) {
-                    field.classList.add('invalid');
-                    return false;
-                }
-            }
-            
-            if (field.type === 'password' && value && value.length < 6) {
-                field.classList.add('invalid');
-                return false;
-            }
-            
-            // Success styling
-            if (value) {
-                field.classList.add('valid');
-            }
-            return true;
-        }
-
-        // Event listeners
-        window.addEventListener('resize', function() {
-            if (window.innerWidth > 768) {
-                closeMobileSidebar();
-            }
-        });
-
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape') {
-                if (mobileSidebarOpen) {
-                    closeMobileSidebar();
-                }
-            }
-        });
-
-        // Display Flask flash messages if any
-        window.addEventListener('DOMContentLoaded', function() {
-            // This would be populated by Flask template if there are flash messages
-            // For now, it's handled by the form validation
+            this.value = this.value.replace(/[^\d\s\-\+\(\)]/g, '').slice(0, 15);
         });
     </script>
 </body>
-</html> 
+</html>

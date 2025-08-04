@@ -272,6 +272,11 @@ def create_user():
         company_address = request.form.get('company_address')
         company_phone = request.form.get('company_phone')
         company_email = request.form.get('company_email')
+        gst_number = request.form.get('gst_number')
+        bank_name = request.form.get('bank_name')
+        bank_account = request.form.get('bank_account')
+        ifsc_code = request.form.get('ifsc_code')
+        terms_conditions = request.form.get('terms_conditions')
 
         # Validate required fields
         if not all([name, email, contact_no, password, role, company_name, company_address, company_phone, company_email]):
@@ -304,9 +309,9 @@ def create_user():
             # Step 4: Insert into organization_master (org_id is auto-incremented)
             cursor.execute("""
                 INSERT INTO organization_master 
-                (admin_id, role, company_name, company_address, company_phone, company_email)
-                VALUES (%s, %s, %s, %s, %s, %s)
-            """, (user_id, role, company_name, company_address, company_phone, company_email))
+                (admin_id, role, company_name, company_address, company_phone, company_email, gst_number, bank_name, bank_account, ifsc_code, terms_conditions)
+                VALUES (%s, %s, %s, %s, %s, %s,%s, %s, %s, %s, %s)
+            """, (user_id, role, company_name, company_address, company_phone, company_email, gst_number, bank_name, bank_account, ifsc_code, terms_conditions))
             conn.commit()
             org_id = cursor.lastrowid  # Get the auto-incremented org_id
             print(f"New organization created with ID: {org_id}")

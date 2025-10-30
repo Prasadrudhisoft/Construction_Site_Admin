@@ -25,8 +25,8 @@ app.permanent_session_lifetime = timedelta(hours=24)
 def db_connection():
     return pymysql.connect(
         host="localhost",
-        user="root",
-        password="omgodse200378",
+        user="sam",
+        password="Sam@130201",
         database="construction_site_management",
         cursorclass=pymysql.cursors.DictCursor
     )

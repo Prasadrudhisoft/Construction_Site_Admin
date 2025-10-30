@@ -515,4 +515,4 @@ def test_db():
         return f"<h2>Database Error:</h2><p>{str(e)}</p>"
 
 if __name__ == "__main__":
-    app.run(host="127.0.0.1", port=5001, debug=True)
+    app.run(debug=config.DEBUG, host='0.0.0.0', port=5000)

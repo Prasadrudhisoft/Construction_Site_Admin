@@ -6,9 +6,14 @@ from werkzeug.utils import secure_filename
 from werkzeug.security import check_password_hash, generate_password_hash
 from functools import wraps
 import uuid
+import smtplib
+from email.mime.text import MIMEText
+import time
+import random
 
 app = Flask(__name__)
 app.secret_key = 'your-super-secret-key-here-make-it-long-and-complex'
+
 
 # Session configuration
 app.config['SESSION_TYPE'] = 'filesystem'
@@ -17,6 +22,10 @@ app.config['SESSION_USE_SIGNER'] = True
 app.config['SESSION_FILE_DIR'] = '/tmp/flask_session'
 app.config['SESSION_FILE_THRESHOLD'] = 500
 app.config['SESSION_FILE_MODE'] = 384
+
+# Email Configuration (Add after session configuration)
+EMAIL = "omg.comp_ioe@bkc.met.edu"  # Replace with your email
+EMAIL_PASSWORD = "lpmy ozqr biuj hbgg"  # Replace with your app password
 
 # Set session lifetime
 app.permanent_session_lifetime = timedelta(hours=24)
@@ -66,6 +75,181 @@ def role_required(required_role):
             return f(*args, **kwargs)
         return decorated_function
     return decorator
+
+
+# OTP Functions
+def generate_otp():
+    return str(random.randint(100000, 999999))  # Generate 6-digit OTP
+
+def send_otp_email(email, otp):
+    try:
+        msg = MIMEText(f"""
+Hello,
+
+You have requested to reset your password for the Construction Site Management System.
+
+Your OTP is: {otp}
+
+This OTP will expire in 5 minutes.
+
+If you did not request this, please ignore this email.
+
+Best regards,
+Construction Site Management Team
+        """)
+        msg['Subject'] = "Password Reset OTP - Construction Site Management"
+        msg['From'] = EMAIL
+        msg['To'] = email
+
+        server = smtplib.SMTP('smtp.gmail.com', 587)
+        server.starttls()
+        server.login(EMAIL, EMAIL_PASSWORD)
+        server.sendmail(EMAIL, email, msg.as_string())
+        server.quit()
+        return True, None
+    except Exception as e:
+        return False, str(e)
+    
+
+
+
+
+
+#######################
+# Forgot Password Routes (Super Admin Only)
+#######################
+
+@app.route('/forgot_password', methods=['GET', 'POST'])
+def forgot_password():
+    if request.method == 'POST':
+        email = request.form.get('email')
+        
+        if not email:
+            flash('Please enter your email address.', 'danger')
+            return redirect(url_for('forgot_password'))
+        
+        conn = db_connection()
+        cursor = conn.cursor()
+        try:
+            # Check if user exists and is a super_admin
+            cursor.execute("SELECT * FROM register WHERE email = %s AND role = 'super_admin'", (email,))
+            user = cursor.fetchone()
+
+            if user:
+                # Check if user is active
+                if user['status'] != 'active':
+                    flash('Your account is disabled. Please contact administrator.', 'danger')
+                    return redirect(url_for('forgot_password'))
+                
+                otp = generate_otp()
+                success, error = send_otp_email(email, otp)
+
+                if success:
+                    session['reset_email'] = email
+                    session['reset_otp'] = otp
+                    session['reset_otp_expiry'] = (datetime.now() + timedelta(minutes=5)).timestamp()
+
+                    flash('OTP has been sent to your email address.', 'success')
+                    return redirect(url_for('verify_reset_otp'))
+                else:
+                    flash(f"Error sending OTP: {error}", 'danger')
+            else:
+                flash("No Super Admin account found with this email.", 'danger')
+        except Exception as e:
+            flash('Database error occurred.', 'danger')
+            app.logger.error(f"Error in forgot password: {str(e)}")
+        finally:
+            conn.close()
+    
+    return render_template('forgot_password.html')
+
+@app.route('/verify_reset_otp', methods=['GET', 'POST'])
+def verify_reset_otp():
+    if request.method == 'POST':
+        otp_input = request.form.get('otp')
+        
+        if 'reset_otp' not in session or 'reset_email' not in session:
+            flash("Session expired. Please try again.", 'danger')
+            return redirect(url_for('forgot_password'))
+
+        if time.time() > session.get('reset_otp_expiry', 0):
+            flash("OTP expired. Please request a new one.", 'danger')
+            return redirect(url_for('forgot_password'))
+
+        if otp_input == session['reset_otp']:
+            flash("OTP verified successfully. Please set a new password.", 'success')
+            return redirect(url_for('reset_password'))
+        else:
+            flash("Invalid OTP. Please try again.", 'danger')
+    
+    return render_template("verify_reset_otp.html")
+
+@app.route('/reset_password', methods=['GET', 'POST'])
+def reset_password():
+    # Check if the user has verified OTP
+    if 'reset_email' not in session or 'reset_otp' not in session:
+        flash("Unauthorized access. Please start the password reset process again.", 'danger')
+        return redirect(url_for('forgot_password'))
+    
+    if request.method == 'POST':
+        new_password = request.form.get('new_password')
+        confirm_password = request.form.get('confirm_password')
+
+        if not new_password or not confirm_password:
+            flash("Please fill in all fields.", 'danger')
+            return redirect(url_for('reset_password'))
+
+        if new_password != confirm_password:
+            flash("Passwords do not match.", 'danger')
+            return redirect(url_for('reset_password'))
+        
+        if len(new_password) < 6:
+            flash("Password must be at least 6 characters long.", 'danger')
+            return redirect(url_for('reset_password'))
+
+        hashed_pw = generate_password_hash(new_password)
+        email = session.get('reset_email')
+        
+        conn = db_connection()
+        cursor = conn.cursor()
+        try:
+            cursor.execute("UPDATE register SET password_hash = %s WHERE email = %s", (hashed_pw, email))
+            conn.commit()
+
+            # Clear session values
+            session.pop('reset_email', None)
+            session.pop('reset_otp', None)
+            session.pop('reset_otp_expiry', None)
+
+            flash("Password reset successful. You can now login with your new password.", 'success')
+            return redirect(url_for('login'))
+        except Exception as e:
+            conn.rollback()
+            flash('Error resetting password. Please try again.', 'danger')
+            app.logger.error(f"Error in reset password: {str(e)}")
+        finally:
+            conn.close()
+
+    return render_template('reset_password.html')
+
+@app.route('/resend_otp')
+def resend_otp():
+    if 'reset_email' not in session:
+        flash("Session expired. Please start the password reset process again.", 'danger')
+        return redirect(url_for('forgot_password'))
+    
+    email = session['reset_email']
+    otp = generate_otp()
+    success, error = send_otp_email(email, otp)
+    
+    if success:
+        session['reset_otp'] = otp
+        session['reset_otp_expiry'] = (datetime.now() + timedelta(minutes=5)).timestamp()
+        flash('New OTP has been sent to your email.', 'success')
+    else:
+        flash(f"Error sending OTP: {error}", 'danger')
+    
+    return redirect(url_for('verify_reset_otp'))
 
 #######################
 # Authentication Routes
@@ -204,6 +388,9 @@ def super_admin_dashboard():
         conn = db_connection()
         cursor = conn.cursor()
 
+        # Get current logged-in user ID from session
+        current_user_id = session.get('user_id')
+
         # Filter users by role
         if role_filter:
             cursor.execute("SELECT * FROM register WHERE role = %s ORDER BY id DESC", (role_filter,))
@@ -244,6 +431,7 @@ def super_admin_dashboard():
 
         return render_template('super_admin_dashboard.html',
                             users=users,
+                            current_user_id=current_user_id,  # Add this line
                             admin_count=role_counts.get('admin', 0),
                             architect_count=role_counts.get('architect', 0),
                             engineer_count=role_counts.get('site_engineer', 0),
@@ -380,41 +568,59 @@ def edit_user(user_id):
 @app.route('/super_admin/delete_user/<int:user_id>')
 @role_required('super_admin')
 def delete_user(user_id):
-    conn = db_connection()
-    cursor = conn.cursor()
+    # Get current logged-in user ID
+    current_user_id = session.get('user_id')
+    
+    # Prevent self-deletion
+    if user_id == current_user_id:
+        flash('You cannot delete your own account!', 'danger')
+        return redirect(url_for('super_admin_dashboard'))
+    
     try:
+        conn = db_connection()
+        cursor = conn.cursor()
+        
+        # Your existing delete logic here
         cursor.execute("DELETE FROM register WHERE id = %s", (user_id,))
         conn.commit()
-        flash("User deleted successfully.", "success")
+        
+        flash('User deleted successfully!', 'success')
     except Exception as e:
-        conn.rollback()
         flash('Error deleting user.', 'danger')
         app.logger.error(f"Error deleting user: {str(e)}")
     finally:
         conn.close()
+    
     return redirect(url_for('super_admin_dashboard'))
+
 
 @app.route('/super_admin/toggle_user_status/<int:user_id>/<status>')
 @role_required('super_admin')
 def toggle_user_status(user_id, status):
-    if status not in ['active', 'disabled']:
-        flash('Invalid status.', 'danger')
+    # Get current logged-in user ID
+    current_user_id = session.get('user_id')
+    
+    # Prevent self-disabling
+    if user_id == current_user_id and status == 'disabled':
+        flash('You cannot disable your own account!', 'danger')
         return redirect(url_for('super_admin_dashboard'))
-
-    conn = db_connection()
-    cursor = conn.cursor()
+    
     try:
-        cursor.execute("UPDATE register SET status=%s WHERE id=%s", (status, user_id))
+        conn = db_connection()
+        cursor = conn.cursor()
+        
+        # Your existing status toggle logic here
+        cursor.execute("UPDATE register SET status = %s WHERE id = %s", (status, user_id))
         conn.commit()
-        flash(f"User {status} successfully.", "success")
+        
+        flash(f'User status updated to {status} successfully!', 'success')
     except Exception as e:
-        conn.rollback()
         flash('Error updating user status.', 'danger')
         app.logger.error(f"Error toggling user status: {str(e)}")
     finally:
         conn.close()
+    
     return redirect(url_for('super_admin_dashboard'))
-
 @app.route('/api/user_stats')
 @role_required('super_admin')
 def user_stats():

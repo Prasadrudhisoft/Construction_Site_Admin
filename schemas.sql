@@ -1,7 +1,3 @@
-
---######################################################## Main ERP Tables ##########################################################
--- ############################## register table ##############################
-
 CREATE TABLE IF NOT EXISTS register (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
@@ -13,7 +9,6 @@ CREATE TABLE IF NOT EXISTS register (
     status ENUM('active', 'disabled') DEFAULT 'active'
 );
 
---############################################## architects table ##########################################
 
 CREATE TABLE IF NOT EXISTS architects (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -28,7 +23,6 @@ CREATE TABLE IF NOT EXISTS architects (
     FOREIGN KEY (register_id) REFERENCES register(id) ON DELETE SET NULL
 );
 
--- ######################################## architect_projects table ##########################################
 
 CREATE TABLE IF NOT EXISTS  architect_projects (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -44,7 +38,6 @@ CREATE TABLE IF NOT EXISTS  architect_projects (
     FOREIGN KEY (architect_id) REFERENCES architects(id) ON DELETE SET NULL
 );
 
--- ########################## projects table ###################################
 
 CREATE TABLE IF NOT EXISTS   projects (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -56,8 +49,6 @@ CREATE TABLE IF NOT EXISTS   projects (
 );
 
 
--- ############################## daily_worker_report table ######################################
-
 CREATE TABLE  IF NOT EXISTS daily_worker_report (
     id INT AUTO_INCREMENT PRIMARY KEY,
     site_engineer_id INT NOT NULL,
@@ -68,8 +59,6 @@ CREATE TABLE  IF NOT EXISTS daily_worker_report (
     FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE
 );
 
-
---#################################### design_details table ####################################
 
 CREATE TABLE  IF NOT EXISTS design_details (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -83,8 +72,6 @@ CREATE TABLE  IF NOT EXISTS design_details (
     org_id INT NOT NULL
 );
 
-
---############################################### drawing_documents table ###################################
 
 CREATE TABLE IF NOT EXISTS drawing_documents (
     id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
@@ -105,10 +92,6 @@ CREATE TABLE IF NOT EXISTS drawing_documents (
 );
 
 
-
-
--- ################################## enquiries table ########################################
-
 CREATE TABLE IF NOT EXISTS enquiries (
     id INT AUTO_INCREMENT PRIMARY KEY,
     site_engineer_id INT,
@@ -120,7 +103,7 @@ CREATE TABLE IF NOT EXISTS enquiries (
     org_id INT NOT NULL
 );
 
---########################################### inventory table #############################################
+
 CREATE TABLE  IF NOT EXISTS inventory (
     material_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
     material_description VARCHAR(255) NOT NULL,
@@ -131,9 +114,6 @@ CREATE TABLE  IF NOT EXISTS inventory (
     site_engineer_id INT NOT NULL,
 );
 
-
-
--- ############################# invoice_items table ##################################
 
 CREATE TABLE IF NOT EXISTS invoice_items (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -146,8 +126,6 @@ CREATE TABLE IF NOT EXISTS invoice_items (
     FOREIGN KEY (invoice_id) REFERENCES invoices(id) ON DELETE CASCADE
 );
 
-
--- i###################################### invoices table ###########################
 
 CREATE TABLE IF NOT EXISTS invoices (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -173,7 +151,6 @@ CREATE TABLE IF NOT EXISTS invoices (
     FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE SET NULL
 );
 
--- ############################### legal_and_compliances table #########################################
 
 CREATE TABLE IF NOT EXISTS legal_and_compliances (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -191,8 +168,6 @@ CREATE TABLE IF NOT EXISTS legal_and_compliances (
 );
 
 
--- ############################ material_specifications table ######################################### 
-
 CREATE TABLE  IF NOT EXISTS material_specifications (
     id INT AUTO_INCREMENT PRIMARY KEY,
     project_id INT,
@@ -205,7 +180,6 @@ CREATE TABLE  IF NOT EXISTS material_specifications (
     org_id INT NOT NULL
 );
 
---################################ progress_reports table ############################
 
 CREATE TABLE IF NOT EXISTS progress_reports (
     report_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
@@ -220,7 +194,7 @@ CREATE TABLE IF NOT EXISTS progress_reports (
     INDEX (org_id)
 );
 
--- ########################################## messages table ##########################################
+
 CREATE TABLE IF NOT EXISTS messages (
     id INT AUTO_INCREMENT PRIMARY KEY,
     sender_id INT NOT NULL,
@@ -233,7 +207,6 @@ CREATE TABLE IF NOT EXISTS messages (
     FOREIGN KEY (receiver_id) REFERENCES register(id) ON DELETE CASCADE
 );
 
--- ############### salaries table ##############################
 
 CREATE TABLE IF NOT EXISTS salaries (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -257,8 +230,6 @@ CREATE TABLE IF NOT EXISTS salaries (
 );
 
 
--- #################################### site_conditions table #######################################
-
 CREATE TABLE IF NOT EXISTS site_conditions (
     id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
     project_id INT NOT NULL UNIQUE,
@@ -270,7 +241,6 @@ CREATE TABLE IF NOT EXISTS site_conditions (
     org_id INT NOT NULL
 );
 
--- ######################################## sites table ###############################################
 
 CREATE TABLE IF NOT EXISTS sites (
     site_id INT AUTO_INCREMENT PRIMARY KEY,
@@ -283,8 +253,6 @@ CREATE TABLE IF NOT EXISTS sites (
 );
 
 
-
--- #############################structural_details table###############################################
 
 CREATE TABLE IF NOT EXISTS structural_details (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -300,8 +268,6 @@ CREATE TABLE IF NOT EXISTS structural_details (
 
 
 
--- #######################utilities_services table#############################################
-
 CREATE TABLE IF NOT EXISTS utilities_services (
     id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
     project_id INT NOT NULL UNIQUE,
@@ -314,9 +280,6 @@ CREATE TABLE IF NOT EXISTS utilities_services (
 );
 
 
-
-
--- ####################vendor_inventory table##################################
 
 CREATE TABLE IF NOT EXISTS vendor_inventory (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -333,7 +296,6 @@ CREATE TABLE IF NOT EXISTS vendor_inventory (
 );
 
 
--- ##################################### accountant_projects table ######################################
 
 CREATE TABLE IF NOT EXISTS accountant_projects (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -344,8 +306,6 @@ CREATE TABLE IF NOT EXISTS accountant_projects (
 );
 
 
-
------------############ cost_estimation table #######################################################
 
 CREATE TABLE IF NOT EXISTS cost_estimation (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -362,7 +322,7 @@ CREATE TABLE IF NOT EXISTS cost_estimation (
     org_id INT NOT NULL
 );
 
------------################################### ORGANIZATION TABLE ##########################################
+
 CREATE TABLE IF NOT EXISTS organization_master (
     org_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
     admin_id INT DEFAULT NULL,
@@ -377,7 +337,8 @@ CREATE TABLE IF NOT EXISTS organization_master (
     gst_number VARCHAR(20),
     terms_conditions VARCHAR(200)
 );
------------######################################## daily_expenses table ##########################################
+
+
 CREATE TABLE IF NOT EXISTS daily_expenses (
     id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
     site_engineer_id INT,

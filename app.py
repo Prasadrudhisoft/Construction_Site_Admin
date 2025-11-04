@@ -31,8 +31,7 @@ app.config['SESSION_FILE_THRESHOLD'] = 500
 app.config['SESSION_FILE_MODE'] = 384
 
 # Email Configuration (Add after session configuration)
-EMAIL = "omg.comp_ioe@bkc.met.edu"  # Replace with your email
-EMAIL_PASSWORD = "lpmy ozqr biuj hbgg"  # Replace with your app password
+
 
 # Set session lifetime
 app.permanent_session_lifetime = timedelta(hours=24)
@@ -41,8 +40,8 @@ app.permanent_session_lifetime = timedelta(hours=24)
 def db_connection():
     return pymysql.connect(
         host="localhost",
-        user="root",
-        password="omgodse200378",
+        user="sam",
+        password="Sam@130201",
         database="construction_site_management",
         cursorclass=pymysql.cursors.DictCursor
     )

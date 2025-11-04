@@ -10,9 +10,16 @@ import smtplib
 from email.mime.text import MIMEText
 import time
 import random
+import requests
 
 app = Flask(__name__)
 app.secret_key = 'your-super-secret-key-here-make-it-long-and-complex'
+
+
+ZEPTOMAIL_API_URL = "https://api.zeptomail.in/v1.1/email"
+ZEPTOMAIL_API_TOKEN = "PHtE6r1fFu65gzMt8UAJ5/7rHsGsN40m+uJufQkRtYxAXKABS01XrNooxGfkq018A/cXF/DPwNpque6ateiAd23lYGpNVGqyqK3sx/VYSPOZsbq6x00ftFsadUXVV4brdtRv0SXXvdrbNA=="  # Replace with your actual token
+ZEPTOMAIL_FROM_EMAIL = "contact@rudhisoft.com"
+ZEPTOMAIL_FROM_NAME = "Rudhiarch"
 
 
 # Session configuration
@@ -34,8 +41,8 @@ app.permanent_session_lifetime = timedelta(hours=24)
 def db_connection():
     return pymysql.connect(
         host="localhost",
-        user="sam",
-        password="Sam@130201",
+        user="root",
+        password="omgodse200378",
         database="construction_site_management",
         cursorclass=pymysql.cursors.DictCursor
     )
@@ -82,33 +89,73 @@ def generate_otp():
     return str(random.randint(100000, 999999))  # Generate 6-digit OTP
 
 def send_otp_email(email, otp):
+    """
+    Send OTP email using ZeptoMail
+    Returns: (success: bool, error_message: str or None)
+    """
     try:
-        msg = MIMEText(f"""
-Hello,
-
-You have requested to reset your password for the Construction Site Management System.
-
-Your OTP is: {otp}
-
-This OTP will expire in 5 minutes.
-
-If you did not request this, please ignore this email.
-
-Best regards,
-Construction Site Management Team
-        """)
-        msg['Subject'] = "Password Reset OTP - Construction Site Management"
-        msg['From'] = EMAIL
-        msg['To'] = email
-
-        server = smtplib.SMTP('smtp.gmail.com', 587)
-        server.starttls()
-        server.login(EMAIL, EMAIL_PASSWORD)
-        server.sendmail(EMAIL, email, msg.as_string())
-        server.quit()
+        headers = {
+            "accept": "application/json",
+            "content-type": "application/json",
+            "authorization": f"Zoho-enczapikey {ZEPTOMAIL_API_TOKEN}"
+        }
+        
+        payload = {
+            "from": {
+                "address": ZEPTOMAIL_FROM_EMAIL,
+                "name": ZEPTOMAIL_FROM_NAME
+            },
+            "to": [
+                {
+                    "email_address": {
+                        "address": email
+                    }
+                }
+            ],
+            "subject": "Your OTP Code for Verification",
+            "htmlbody": f"""
+                <html>
+                    <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+                        <div style="max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #ddd; border-radius: 10px;">
+                            <h2 style="color: #1e3a8a; text-align: center;">OTP Verification</h2>
+                            <p>Hello,</p>
+                            <p>Your One-Time Password (OTP) for verification is:</p>
+                            <div style="text-align: center; margin: 30px 0;">
+                                <span style="font-size: 32px; font-weight: bold; color: #1e3a8a; letter-spacing: 5px; padding: 15px 30px; border: 2px dashed #1e3a8a; border-radius: 8px; display: inline-block;">
+                                    {otp}
+                                </span>
+                            </div>
+                            <p style="color: #e74c3c; font-weight: bold;">⚠️ This code will expire in 5 minutes.</p>
+                            <p>If you didn't request this code, please ignore this email.</p>
+                            <hr style="border: none; border-top: 1px solid #ddd; margin: 30px 0;">
+                            <p style="font-size: 12px; color: #666;">
+                                Best regards,<br>
+                                <strong>Rudhiarch Team</strong>
+                            </p>
+                        </div>
+                    </body>
+                </html>
+            """
+        }
+        
+        response = requests.post(ZEPTOMAIL_API_URL, headers=headers, json=payload, timeout=10)
+        
+        # Log response for debugging
+        print(f"ZeptoMail Status Code: {response.status_code}")
+        print(f"ZeptoMail Response: {response.text}")
+        
+        response.raise_for_status()
         return True, None
+        
+    except requests.exceptions.Timeout:
+        return False, "Email service timeout. Please try again."
+    except requests.exceptions.RequestException as e:
+        error_msg = f"Failed to send email: {str(e)}"
+        if hasattr(e, 'response') and e.response is not None:
+            error_msg += f" - {e.response.text}"
+        return False, error_msg
     except Exception as e:
-        return False, str(e)
+        return False, f"Unexpected error: {str(e)}"
     
 
 

@@ -695,7 +695,7 @@ def user_stats():
 @app.route('/admin/dashboard')
 @role_required('admin')
 def admin_dashboard():
-    return render_template('admin_dashboard.html')
+    return render_template('super_admin_dashboard.html')
 
 @app.route('/architect/dashboard')
 @role_required('architect')
